@@ -1,0 +1,16 @@
+#clickable{
+    text-decoration:none; 
+    color:rgba(0, 0, 0, 0.7);
+}
+
+#content{
+    height:80vh; 
+    margin-top:10vh; 
+    margin-bottom:10vh; 
+    display:flex; 
+    flex-direction:column; 
+    justify-content:center; 
+    align-items:center;  
+    background-color:rgba(255, 255, 255, 0.7);
+    border-radius:30px;
+}

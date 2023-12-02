@@ -1,0 +1,43 @@
+.container{
+    display:flex; 
+    flex-direction:column; 
+    justify-content:center; 
+    align-items:center;  
+    background-color:rgba(255, 255, 255, 0.7);
+    border-radius:30px;
+}
+
+#choose{
+    height:40vh; 
+    margin-top:30vh; 
+    margin-bottom:30vh;
+}
+
+#usr-login{
+    margin-top:10vh; 
+    padding:2vw;
+    width:fit-content;
+    display:none;
+}
+
+#usr-regn{
+    margin-top:10vh; 
+    padding:2vw;
+    width:fit-content;
+    display:none;
+}
+
+.border{
+    border-radius:10px;
+    padding:2%;
+    background-color:rgba(255, 255, 255, 0.7);
+}
+
+.border:hover{
+    background-color:grey;
+    cursor:pointer;
+}
+
+label{
+    color:black;
+}
