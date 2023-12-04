@@ -16,11 +16,22 @@ def home():
 def login_page():
     return render_template("login.html")
 
-
 @app.get('/dash')
 def dash():
     return render_template("dash.html")
 
+@app.get('/add_to_cart/<int:pid>')
+def add_to_cart(pid):
+    return render_template("dash.html")
+
+@app.get('/cart')
+def cart():
+    return render_template("cart.html")
+
+"""@app.get('/add_to_cart')
+def add_to_cart():
+    return render_template("add_to_cart.html")
+"""
 
 @app.get('/admin')
 @auth_required("token")

@@ -31,7 +31,7 @@ order_desc_parser.add_argument('Status', type=int, help='Status is required and 
 order_desc_parser.add_argument('UID', type=str, help='User ID is required and should be a string', required=True)
 
 order_details_parser = reqparse.RequestParser()
-order_details_parser.add_argument('OID', type=int, help='Order ID is required and should be an integer', required=True)
+order_details_parser.add_argument('email', type=str, help='User email is required and should be an string', required=True)
 order_details_parser.add_argument('PID', type=int, help='Product ID is required and should be an integer', required=True)
 order_details_parser.add_argument('Qty', type=int, help='Quantity is required and should be an integer', required=True)
 
@@ -50,11 +50,25 @@ user_fields = {
     'active': fields.Boolean,
 }
 
+class ProductList(fields.Raw):
+    def format(self, products):
+        return [marshal(product, product_fields) for product in products]
+
 category_fields = {
+    'CID': fields.Integer,
+    'Name': fields.String,
+    'products': ProductList(attribute='products'),
+}
+
+category_fields_wop = {
     'CID': fields.Integer,
     'Name': fields.String,
 }
 
+class Category_Field(fields.Raw):
+    def format(self, cat):
+        return marshal(cat, category_fields_wop)
+    
 product_fields = {
     'PID': fields.Integer,
     'Name': fields.String,
@@ -62,6 +76,16 @@ product_fields = {
     'Unit': fields.String,
     'Stock': fields.Integer,
     'CID': fields.Integer,
+}
+
+product_fields_wc = {
+    'PID': fields.Integer,
+    'Name': fields.String,
+    'Price': fields.Float,
+    'Unit': fields.String,
+    'Stock': fields.Integer,
+    
+    'cat': Category_Field(attribute='cat'),
 }
 
 order_desc_fields = {
@@ -164,6 +188,18 @@ class ProductResource(Resource):
 # Add the ProductResource to the API with the endpoint '/products'
 api.add_resource(ProductResource, '/products')
 
+class ProductCatResource(Resource):
+    # Retrieve all products
+    @auth_required("token")
+    def get(self, pid):
+        product = Product.query.get(pid)
+        if product:
+            return marshal(product, product_fields_wc)
+        else:
+            return {"message": "No products found"}, 404
+# Add the ProductResource to the API with the endpoint '/products'
+api.add_resource(ProductCatResource, '/product/<int:pid>')
+
 class OrderDescResource(Resource):
     # Retrieve all order descriptions
     @auth_required("token")
@@ -199,13 +235,40 @@ class OrderDetailsResource(Resource):
 
     # Create new order details (admin role required)
     @auth_required("token")
-    @roles_required("admin")
     def post(self):
         args = order_details_parser.parse_args()
-        print("heyyyyyy", args)
-        order_details = Order_Details(OID=args.get("OID"), PID=args.get("PID"), Qty=args.get("Qty"))
-        db.session.add(order_details)
-        db.session.commit()
+        user = User.query.filter_by(email=args.get("email")).first()
+        
+        active_order = None
+        for o in user.orders:
+            if o.Status == 1:
+                active_order = o
+        
+        if active_order is None:
+            try:
+                new_order = Orders_Desc(Status = 1, UID = int(user.id), Date=datetime.strptime(datetime.now().strftime("%Y-%m-%d"), "%Y-%m-%d").date())
+                db.session.add(new_order)
+
+                new_line_item = Order_Details(OID = int(new_order.OID), PID = args.PID, Qty = args.Qty)
+                db.session.add(new_line_item)
+            except Exception as et:
+                status = "Invalid addition"
+                print("Rolling back")
+                db.session.rollback()
+            else:
+                status="success"
+                db.session.commit()
+        else:
+            try:            
+                new_line_item = Order_Details(OID = int(active_order.OID), PID = args.PID, Qty = args.Qty)
+                db.session.add(new_line_item)
+            except:
+                status = "This item exists in your cart\n You can change your quantity by editing the cart"
+                print("Rolling back")
+            else:
+                status="success"
+                db.session.commit()
+
         return {"message": "Order details created successfully"}
 
 # Add the OrderDetailsResource to the API with the endpoint '/order_details'

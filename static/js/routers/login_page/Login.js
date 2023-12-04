@@ -171,6 +171,7 @@ export default {
             if (res.ok) {
                 localStorage.setItem('auth-token', data.token);
                 localStorage.setItem('role', data.role);
+                localStorage.setItem('email', data.email);
                 window.location.href = '/dash';
             } else {
                 this.error = data.message;
