@@ -11,7 +11,7 @@ export default{
             <div @click=logout>Summary</div>
         </div>
         <div v-if="userRole=='buyer'" class="clickable nav shadow-sm" style = "margin-left:auto;text-align:right; border-right:2px solid black;">
-            <div @click=logout>Cart</div>
+            <div @click=cart>Cart</div>
         </div>
 
         <div class="clickable nav shadow-sm" style = "margin-right:1vh; text-align:left;">
@@ -29,5 +29,8 @@ export default{
             localStorage.clear();
             window.location.href = "/login_page";
         },
+        cart(){
+            window.location.href = "/cart";
+        }
     },
 }

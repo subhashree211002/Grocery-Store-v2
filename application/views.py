@@ -28,6 +28,15 @@ def add_to_cart(pid):
 def cart():
     return render_template("cart.html")
 
+
+@app.get('/add_edit_prod/<int:CID>/<int:pid>')
+def add_edit_prod(CID, pid):
+    return render_template("create_edit_prod.html")
+
+@app.get('/add_edit_cat/<int:CID>')
+def add_edit_cat(CID):
+    return render_template("create_edit_cat.html")
+
 """@app.get('/add_to_cart')
 def add_to_cart():
     return render_template("add_to_cart.html")
@@ -64,7 +73,8 @@ def user_login():
 
     if not user:
         return jsonify({"message": "User Not Found"}), 404
-
+    if not user.active:
+        return jsonify({"message": "User waiting for approval"}), 400
     if check_password_hash(user.password, data.get("password")):
         return jsonify({"token": user.get_auth_token(), "email": user.email, "role": user.roles[0].name})
     else:

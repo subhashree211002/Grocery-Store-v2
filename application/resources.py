@@ -30,10 +30,17 @@ order_desc_parser.add_argument('Date', type=str, help='Date is required and shou
 order_desc_parser.add_argument('Status', type=int, help='Status is required and should be an integer', default=0)
 order_desc_parser.add_argument('UID', type=str, help='User ID is required and should be a string', required=True)
 
+order_desc_post_parser = reqparse.RequestParser()
+order_desc_post_parser.add_argument('OID', type=int, help='Order ID is required and should be an integer', required=True)
+
 order_details_parser = reqparse.RequestParser()
 order_details_parser.add_argument('email', type=str, help='User email is required and should be an string', required=True)
 order_details_parser.add_argument('PID', type=int, help='Product ID is required and should be an integer', required=True)
 order_details_parser.add_argument('Qty', type=int, help='Quantity is required and should be an integer', required=True)
+
+order_details_del_parser = reqparse.RequestParser()
+order_details_del_parser.add_argument('email', type=str, help='User email is required and should be an string', required=True)
+order_details_del_parser.add_argument('PID', type=int, help='Product ID is required and should be an integer', required=True)
 
 # Fields for formatting data in the API response
 user_by_id_fields = {
@@ -95,10 +102,14 @@ order_desc_fields = {
     'UID': fields.String,
 }
 
+class Product_Field(fields.Raw):
+    def format(self, prod):
+        return marshal(prod, product_fields)
+    
 order_details_fields = {
     'OID': fields.Integer,
-    'PID': fields.Integer,
     'Qty': fields.Integer,
+    'prod': Product_Field(attribute='product'),
 }
 
 
@@ -142,27 +153,61 @@ class UserResource(Resource):
 api.add_resource(UserResource, '/users')
 
 class CategoryResource(Resource):
-    # Retrieve all categories
+    # Retrieve all categories or a specific category by ID
     @auth_required("token")
-    def get(self):
-        categories = Category.query.all()
-        if len(categories) > 0:
-            return marshal(categories, category_fields)
+    def get(self, category_id=None):
+        if category_id:
+            category = Category.query.get(category_id)
+            if category:
+                return marshal(category, category_fields)
+            else:
+                return {"message": "Category not found"}, 404
         else:
-            return {"message": "No categories found"}, 404
-
+            categories = Category.query.all()
+            if len(categories) > 0:
+                return marshal(categories, category_fields)
+            else:
+                return {"message": "No categories found"}, 404
+    
     # Create a new category (admin role required)
     @auth_required("token")
-    @roles_required("admin")
     def post(self):
         args = category_parser.parse_args()
         category = Category(Name=args.get("Name"))
         db.session.add(category)
         db.session.commit()
         return {"message": "Category created successfully"}
+    
+    # Update a category by ID (admin role required)
+    @auth_required("token")
+    def put(self, category_id):
+        args = category_parser.parse_args()
+        category = Category.query.get(category_id)
+
+        if not category:
+            return {"message": "Category not found"}, 404
+
+        # Update only the fields that are provided in the request
+        if args.get("Name"):
+            category.Name = args.get("Name")
+
+        db.session.commit()
+        return {"message": "Category updated successfully"}
+
+    # Delete a category by ID (admin role required)
+    @auth_required("token")
+    def delete(self, category_id):
+        category = Category.query.get(category_id)
+
+        if not category:
+            return {"message": "Category not found"}, 404
+
+        db.session.delete(category)
+        db.session.commit()
+        return {"message": "Category deleted successfully"}
 
 # Add the CategoryResource to the API with the endpoint '/categories'
-api.add_resource(CategoryResource, '/categories')
+api.add_resource(CategoryResource, '/categories', '/categories/<int:category_id>')
 
 class ProductResource(Resource):
     # Retrieve all products
@@ -176,7 +221,6 @@ class ProductResource(Resource):
 
     # Create a new product (admin role required)
     @auth_required("token")
-    @roles_required("admin")
     def post(self):
         args = product_parser.parse_args()
         product = Product(Name=args.get("Name"), Price=args.get("Price"), Unit=args.get("Unit"),
@@ -185,8 +229,42 @@ class ProductResource(Resource):
         db.session.commit()
         return {"message": "Product created successfully"}
 
+    @auth_required("token")
+    def put(self, product_id):
+        args = product_parser.parse_args()
+        product = Product.query.get(product_id)
+
+        if not product:
+            return {"message": "Product not found"}, 404
+
+        try:
+            # Update only the fields that are provided in the request
+            if args.get("Name"):
+                product.Name = args.get("Name")
+            if args.get("Price"):
+                product.Price = args.get("Price")
+            if args.get("Unit"):
+                product.Unit = args.get("Unit")
+            if args.get("Stock"):
+                product.Stock = args.get("Stock")
+            db.session.commit()
+        except:
+            return {"error": "Product update error"}, 404
+        return {"message": "Product updated successfully"}
+    
+    @auth_required("token")
+    def delete(self, product_id):
+        product = Product.query.get(product_id)
+
+        if not product:
+            return {"message": "Product not found"}, 404
+
+        db.session.delete(product)
+        db.session.commit()
+        return {"message": "Product deleted successfully"}
+    
 # Add the ProductResource to the API with the endpoint '/products'
-api.add_resource(ProductResource, '/products')
+api.add_resource(ProductResource, '/products', '/products/<int:product_id>')
 
 class ProductCatResource(Resource):
     # Retrieve all products
@@ -212,13 +290,45 @@ class OrderDescResource(Resource):
 
     # Create a new order description (admin role required)
     @auth_required("token")
-    @roles_required("admin")
     def post(self):
-        args = order_desc_parser.parse_args()
-        order_desc = Orders_Desc(Date=datetime.strptime(args.get("Date"), "%Y-%m-%d"), Status=args.get("Status"), UID=args.get("UID"))
-        db.session.add(order_desc)
-        db.session.commit()
-        return {"message": "Order description created successfully"}
+        args = order_desc_post_parser.parse_args()
+        print(args.get("OID"))
+        datetime_obj = datetime.strptime(datetime.now().strftime("%Y-%m-%d"), "%Y-%m-%d").date()
+        status = ""
+        order = Orders_Desc.query.filter(Orders_Desc.OID == args.get("OID")).first()
+        
+        if order is None:
+            status = "failure"
+        else:
+            try:
+                order.Status = 0
+                order.Date = datetime_obj
+                db.session.flush()
+                
+            except Exception as e:
+                status = "Invalid request"
+                print("Rolling back")
+                
+            else:
+                status="success"
+                db.session.commit()
+                order_items = Order_Details.query.filter(Order_Details.OID == args.get("OID")).all()
+                for item in order_items:
+                    try:
+                        prod = Product.query.filter(Product.PID == item.PID).first()
+                        prod.Stock = prod.Stock - item.Qty
+                        db.session.flush()
+                        #print(prod.PID, prod.Stock)
+                        
+                    except Exception as e:
+                        print("Rolling back")
+                        
+                status="success"
+                db.session.commit()
+
+                print("Commit")
+                
+        return {"message": "Cart checked out!"}
 
 # Add the OrderDescResource to the API with the endpoint '/orders_desc'
 api.add_resource(OrderDescResource, '/orders_desc')
@@ -232,28 +342,31 @@ class OrderDetailsResource(Resource):
             return marshal(order_details, order_details_fields)
         else:
             return {"message": "No order details found"}, 404
-
+        
     # Create new order details (admin role required)
     @auth_required("token")
     def post(self):
         args = order_details_parser.parse_args()
+       
         user = User.query.filter_by(email=args.get("email")).first()
-        
+
         active_order = None
         for o in user.orders:
             if o.Status == 1:
                 active_order = o
-        
+        #print(active_order)
         if active_order is None:
             try:
                 new_order = Orders_Desc(Status = 1, UID = int(user.id), Date=datetime.strptime(datetime.now().strftime("%Y-%m-%d"), "%Y-%m-%d").date())
                 db.session.add(new_order)
-
-                new_line_item = Order_Details(OID = int(new_order.OID), PID = args.PID, Qty = args.Qty)
+                db.session.commit()
+                #print(marshal(new_order, order_desc_fields), new_order.OID)
+                #return {"message": "heyy"}
+                new_line_item = Order_Details(OID = new_order.OID, PID = args.get("PID"), Qty = args.get("Qty"))
                 db.session.add(new_line_item)
             except Exception as et:
                 status = "Invalid addition"
-                print("Rolling back")
+                print("Rolling back", et)
                 db.session.rollback()
             else:
                 status="success"
@@ -262,17 +375,98 @@ class OrderDetailsResource(Resource):
             try:            
                 new_line_item = Order_Details(OID = int(active_order.OID), PID = args.PID, Qty = args.Qty)
                 db.session.add(new_line_item)
-            except:
-                status = "This item exists in your cart\n You can change your quantity by editing the cart"
-                print("Rolling back")
-            else:
-                status="success"
                 db.session.commit()
-
+            except Exception as e:
+                
+                print("Rolling back")
+                db.session.rollback()
+                return {"message":"This item exists in your cart\n You can change your quantity by editing the cart"}
+            else:
+                print("success")
         return {"message": "Order details created successfully"}
+    
+    @auth_required("token")
+    def put(self):
+        args = order_details_parser.parse_args()
+       
+        user = User.query.filter_by(email=args.get("email")).first()
+
+        active_order = None
+        for o in user.orders:
+            if o.Status == 1:
+                active_order = o
+        #print(active_order)
+        
+        try:            
+            new_line_item = Order_Details.query.filter_by(OID = int(active_order.OID), PID = args.PID).first()
+            new_line_item.Qty = args.get("Qty")
+            db.session.flush()
+            
+        except Exception as e:
+            
+            print("Rolling back")
+            db.session.rollback()
+            return {"error":"Rolling back"}, 40
+        else:
+            print("success")
+            db.session.commit()
+
+        return {"message": "Order details updated successfully"}
+    
+    @auth_required("token")
+    def delete(self):
+        args = order_details_del_parser.parse_args()
+        
+        user = User.query.filter_by(email=args.get("email")).first()
+        
+        active_order = None
+        for o in user.orders:
+            if o.Status == 1:
+                active_order = o
+
+        item = Order_Details.query.filter(Order_Details.OID == active_order.OID, Order_Details.PID == args.PID).first()
+        #return {"message":"hello there"}
+        try:
+            if item is not None:
+                
+                db.session.delete(item)
+                db.session.commit()
+                return {"message":"Product deleted from cart"}
+            else:
+                return {"error":"Product not found"}, 404
+                #return jsonify(error='Product not found')
+        except Exception as e:
+            db.session.rollback()
+            return {"error":"An error occurred while deleting the product"}, 404
+            
+
 
 # Add the OrderDetailsResource to the API with the endpoint '/order_details'
 api.add_resource(OrderDetailsResource, '/order_details')
+
+class CartDetails(Resource):
+    # Retrieve all order details
+    @auth_required("token")
+    def get(self, email): 
+        user = User.query.filter_by(email=email).first()
+        
+        active_order = None
+        for o in user.orders:
+            if o.Status == 1:
+                active_order = o
+        
+        if active_order is None:
+            return {"message": "No active order found"}, 404
+        else:
+            order_details = Order_Details.query.filter_by(OID=active_order.OID).all()
+            if len(order_details) > 0:
+                return marshal(order_details, order_details_fields)
+            else:
+                return {"message": "No order details found"}, 404
+
+api.add_resource(CartDetails, '/cartdetails/<string:email>')
+
+
 
 
 """from flask_restful import Resource, Api, reqparse, fields, marshal
