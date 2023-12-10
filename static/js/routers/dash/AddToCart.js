@@ -113,9 +113,9 @@ components: {
         })
             .then(response => response.json())
             .then((ret) => {
-            if (ret.stat !== "success") {
-                window.alert(ret.stat);
-            }
+            // if (ret.stat !== "success") {
+            //   window.alert(ret.stat);
+            // }
             window.location.replace("/cart");
             })
             .catch((error) => {
