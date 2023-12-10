@@ -496,7 +496,7 @@ class OrderDetailsResource(Resource):
             
             print("Rolling back")
             db.session.rollback()
-            return {"error":"Rolling back"}, 40
+            return {"error":"Rolling back"}, 404
         else:
             print("success")
             db.session.commit()

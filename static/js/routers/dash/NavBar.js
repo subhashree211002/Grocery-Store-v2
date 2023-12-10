@@ -7,6 +7,11 @@ export default{
         <div class="clickable nav shadow-sm" style = "margin-left:auto;text-align:right; border-right:2px solid black;">
             <div @click="dash">Dashboard</div>
         </div>
+
+        <div v-if="userRole=='store_manager'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
+            <div @click="export_csv">Export Product Details</div>
+        </div>
+
         <div v-if="userRole=='admin'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
             <div @click="approve">Approvals</div>
         </div>
@@ -43,6 +48,9 @@ export default{
         },
         dash(){
             window.location.href = "/dash";
+        },
+        export_csv(){
+            window.alert("done");
         }
     },
 }

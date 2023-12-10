@@ -10,7 +10,7 @@ export default {
               <div class="card-text row" style="margin: auto">
                 <p class="col-5" style="text-align: left; padding: 0;">{{ prod.Name }}</p>
                 <p class="col-4" style="text-align: right; padding-left: 0; padding-right: 0;">Rs <span class="price">{{ prod.Price }}</span></p>
-                <p class="col-3" style="text-align: left; padding: 0; text-align: left;">/{{ prod.Unit }}</p>
+                <p class="col-3" style="text-align: left; padding: 0; text-align: left;">{{ prod.Unit }}</p>
               </div>
               <button type="button" class="btn btn-primary edit-cat" @click="buyProduct(prod.PID)">Buy</button>
               <img :src="getUrl('static', 'images/cart.png')" style="width: 15%">
