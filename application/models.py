@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
+from flask_migrate import Migrate
 db = SQLAlchemy()
+migrate = Migrate(db)
 
 class RolesUsers(db.Model):
     __tablename__ = 'roles_users'
@@ -28,9 +30,24 @@ class Category(db.Model):
     __tablename__ = 'Category'
     CID = db.Column(db.Integer, autoincrement=True, primary_key=True)
     Name = db.Column(db.String(collation='NOCASE'), unique=True, nullable=False)
+    show = db.Column(db.Integer, default = 0)
+    
+    # Establishing the relationship from Category to ApprovalRequest
+    approval_requests = db.relationship("ApprovalRequest", back_populates="cat", cascade='all, delete-orphan', lazy=True)
 
     # Establishing the relationship from Category to Product
     products = db.relationship("Product", back_populates="cat", cascade='all, delete-orphan', passive_deletes=True)
+    
+class ApprovalRequest(db.Model):
+    __tablename__ = 'ApprovalRequest'
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('Category.CID'), nullable=False)
+    update_name = db.Column(db.String(collation='NOCASE'), nullable=True)
+    status = db.Column(db.String, default="Pending", nullable=False)
+    
+    cat = db.relationship("Category", back_populates="approval_requests")
+
+
     
 class Product(db.Model):
     __tablename__ = 'Product'

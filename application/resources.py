@@ -3,7 +3,7 @@ from flask_security import auth_required, roles_required, current_user
 from flask import jsonify
 from sqlalchemy import or_
 from datetime import datetime
-from .models import db, User, Role, Category, Product, Orders_Desc, Order_Details
+from .models import db, User, Role, Category, Product, Orders_Desc, Order_Details, ApprovalRequest
 
 # Create Flask-RESTful API instance with a prefix
 api = Api(prefix='/api')
@@ -64,17 +64,29 @@ class ProductList(fields.Raw):
 category_fields = {
     'CID': fields.Integer,
     'Name': fields.String,
+    'show': fields.Integer,
     'products': ProductList(attribute='products'),
 }
 
 category_fields_wop = {
     'CID': fields.Integer,
     'Name': fields.String,
+    'show': fields.Integer,
 }
 
 class Category_Field(fields.Raw):
     def format(self, cat):
         return marshal(cat, category_fields_wop)
+
+approval_req_fields = {
+    'id': fields.Integer,
+    'category_id': fields.Integer,
+    'update_name': fields.String,
+    'status': fields.String,
+    'cat': Category_Field(attribute='cat'),
+}
+
+
     
 product_fields = {
     'PID': fields.Integer,
@@ -125,13 +137,14 @@ class UserByIdResource(Resource):
             return {"message": "User not found"}, 404
 
 # Add the UserByIdResource to the API with the endpoint '/users/<uid>'
-api.add_resource(UserByIdResource, '/users/<int:uid>')
+api.add_resource(UserByIdResource, '/user/<int:uid>')
 
 class UserResource(Resource):
     # Retrieve all users
     @auth_required("token")
+    @roles_required("admin")
     def get(self):
-        users = User.query.all()
+        users = User.query.filter_by(active = False).all()
         if len(users) > 0:
             return marshal(users, user_fields)
         else:
@@ -148,14 +161,23 @@ class UserResource(Resource):
         db.session.add(user)
         db.session.commit()
         return {"message": "User created successfully"}
+    
+     # Create a new user (admin role required)
+    @auth_required("token")
+    @roles_required("admin")
+    def put(self, uid):
+        user = User.query.filter_by(id=uid).first()
+        user.active = True
+        db.session.commit()
+        return {"message": "User approved successfully"}
 
 # Add the UserResource to the API with the endpoint '/users'
-api.add_resource(UserResource, '/users')
+api.add_resource(UserResource, '/users', '/users/<int:uid>')
 
 class CategoryResource(Resource):
     # Retrieve all categories or a specific category by ID
     @auth_required("token")
-    def get(self, category_id=None):
+    def get(self, category_id=None):    
         if category_id:
             category = Category.query.get(category_id)
             if category:
@@ -163,7 +185,7 @@ class CategoryResource(Resource):
             else:
                 return {"message": "Category not found"}, 404
         else:
-            categories = Category.query.all()
+            categories = Category.query.filter_by(show = 1).all()
             if len(categories) > 0:
                 return marshal(categories, category_fields)
             else:
@@ -174,44 +196,109 @@ class CategoryResource(Resource):
     def post(self):
         args = category_parser.parse_args()
         category = Category(Name=args.get("Name"))
+        
+        if(current_user.has_role('admin')):
+            category.show = 1
+            
         db.session.add(category)
         db.session.commit()
+        
+        if(current_user.has_role('store_manager')):
+            approval_request = ApprovalRequest(category_id=category.CID, update_name = None, status="Pending")
+            db.session.add(approval_request)
+            db.session.commit()
         return {"message": "Category created successfully"}
     
     # Update a category by ID (admin role required)
     @auth_required("token")
     def put(self, category_id):
         args = category_parser.parse_args()
-        category = Category.query.get(category_id)
+        
+        if(current_user.has_role('admin')):
+            category = Category.query.get(category_id)
 
-        if not category:
-            return {"message": "Category not found"}, 404
+            if not category:
+                return {"message": "Category not found"}, 404
 
-        # Update only the fields that are provided in the request
-        if args.get("Name"):
-            category.Name = args.get("Name")
+            # Update only the fields that are provided in the request
+            if args.get("Name"):
+                category.Name = args.get("Name")
 
-        db.session.commit()
-        return {"message": "Category updated successfully"}
+            db.session.commit()
+            return {"message": "Category updated successfully"}
+        else:
+            approval_request = ApprovalRequest(category_id=category_id, update_name = args.get("Name"), status="Pending")
+            db.session.add(approval_request)
+            db.session.commit()
+            return {"message": "Category update request sent"}
 
     # Delete a category by ID (admin role required)
     @auth_required("token")
     def delete(self, category_id):
-        category = Category.query.get(category_id)
-
-        if not category:
-            return {"message": "Category not found"}, 404
-
-        db.session.delete(category)
-        db.session.commit()
-        return {"message": "Category deleted successfully"}
+        if(current_user.has_role('admin')):
+            category = Category.query.get(category_id)
+            if not category:
+                return {"message": "Category not found"}, 404
+            
+            db.session.delete(category)
+            db.session.commit()
+            return {"message": "Category deleted successfully"}
+        else:
+            approval_request = ApprovalRequest(category_id=category_id, update_name = None, status="Pending")
+            db.session.add(approval_request)
+            db.session.commit()
+            return {"message": "Category delete request sent"}
 
 # Add the CategoryResource to the API with the endpoint '/categories'
 api.add_resource(CategoryResource, '/categories', '/categories/<int:category_id>')
 
+
+class ApprovalRequestResource(Resource):
+    @auth_required("token")
+    @roles_required("admin")
+    def get(self, req_id=None):    
+        if req_id:
+            req = ApprovalRequest.query.get(req_id)
+            if req:
+                return marshal(req, approval_req_fields)
+            else:
+                return {"message": "Category not found"}, 404
+        else:
+            reqs = ApprovalRequest.query.filter_by(status = "Pending").all()
+            if len(reqs) > 0:
+                return marshal(reqs, approval_req_fields)
+            else:
+                return {"message": "No categories found"}, 404
+            
+    @auth_required("token")
+    @roles_required("admin")
+    def put(self, req_id):
+        req = ApprovalRequest.query.get(req_id)
+        if req.update_name:
+            req.status = "Approved"
+            req.cat.Name = req.update_name
+            db.session.commit()
+            return {"message": "Category update approved"}
+        elif not req.cat.show:
+            req.status = "Approved"
+            req.cat.show = 1
+            db.session.commit()
+            return {"message": "Category creation approved"}
+        elif req.cat.show:
+            req.status = "Approved"
+            db.session.delete(req.cat)
+            db.session.commit()
+            return {"message": "Category deletion approved"}
+        else:
+            return {"message": "No categories found"}, 404
+            
+api.add_resource(ApprovalRequestResource, '/requests', '/requests/<int:req_id>')
+
+
 class ProductResource(Resource):
     # Retrieve all products
     @auth_required("token")
+    
     def get(self):
         products = Product.query.all()
         if len(products) > 0:
@@ -221,6 +308,7 @@ class ProductResource(Resource):
 
     # Create a new product (admin role required)
     @auth_required("token")
+    @roles_required("store_manager")
     def post(self):
         args = product_parser.parse_args()
         product = Product(Name=args.get("Name"), Price=args.get("Price"), Unit=args.get("Unit"),
@@ -230,6 +318,7 @@ class ProductResource(Resource):
         return {"message": "Product created successfully"}
 
     @auth_required("token")
+    @roles_required("store_manager")
     def put(self, product_id):
         args = product_parser.parse_args()
         product = Product.query.get(product_id)
@@ -253,6 +342,7 @@ class ProductResource(Resource):
         return {"message": "Product updated successfully"}
     
     @auth_required("token")
+    @roles_required("store_manager")
     def delete(self, product_id):
         product = Product.query.get(product_id)
 

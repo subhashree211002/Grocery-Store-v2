@@ -37,10 +37,9 @@ def add_edit_prod(CID, pid):
 def add_edit_cat(CID):
     return render_template("create_edit_cat.html")
 
-"""@app.get('/add_to_cart')
-def add_to_cart():
-    return render_template("add_to_cart.html")
-"""
+@app.get('/approve')
+def approve():
+    return render_template("approve.html")
 
 @app.get('/admin')
 @auth_required("token")

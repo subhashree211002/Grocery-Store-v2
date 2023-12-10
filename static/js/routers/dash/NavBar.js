@@ -4,18 +4,21 @@ export default{
             {{ email }}'s Dashboard
         </div>
 
-        <div v-if="userRole=='admin'" class="clickable nav shadow-sm" style = "margin-left:auto;text-align:right; border-right:2px solid black;">
-            <div @click=logout>Validate Instructors</div>
+        <div class="clickable nav shadow-sm" style = "margin-left:auto;text-align:right; border-right:2px solid black;">
+            <div @click="dash">Dashboard</div>
         </div>
-        <div v-if="userRole=='store_manager'" class="clickable nav shadow-sm" style = "margin-left:auto;text-align:right; border-right:2px solid black;">
-            <div @click=logout>Summary</div>
+        <div v-if="userRole=='admin'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
+            <div @click="approve">Approvals</div>
         </div>
-        <div v-if="userRole=='buyer'" class="clickable nav shadow-sm" style = "margin-left:auto;text-align:right; border-right:2px solid black;">
+        <div v-if="userRole=='store_manager'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
+            <div @click=summary>Summary</div>
+        </div>
+        <div v-if="userRole=='buyer'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
             <div @click=cart>Cart</div>
         </div>
 
         <div class="clickable nav shadow-sm" style = "margin-right:1vh; text-align:left;">
-            <div @click=logout>Logout</div>
+            <div @click="logout">Logout</div>
         </div>
     </nav>`,
     data() {
@@ -31,6 +34,15 @@ export default{
         },
         cart(){
             window.location.href = "/cart";
+        },
+        approve(){
+            window.location.href = "/approve";
+        },
+        summary(){
+            window.location.href = "/summary";
+        },
+        dash(){
+            window.location.href = "/dash";
         }
     },
 }

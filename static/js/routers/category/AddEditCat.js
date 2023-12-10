@@ -73,7 +73,7 @@ export default {
             var u = "";
             u = document.getElementById("cat-name").value;  
             //console.log({ Name: pname, Unit: punit, Price: parseFloat(prate), Stock: parseInt(pqt), CID: parseInt(this.CID)});
-            var url = "/api/categories/"
+            var url = "/api/categories/"+this.CID;
 
             const res = await fetch(url, {
                     method: 'PUT',

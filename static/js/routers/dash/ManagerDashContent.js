@@ -60,11 +60,27 @@ export default {
 
       edit_cat(CID){
         //console.log(CID);
-        window.location.href = `/edit_cat/${CID}`;
+        window.location.href = `/add_edit_cat/${CID}`;
       },
-      del_cat(CID){
+      async del_cat(CID){
         //console.log(CID);
         //window.location.href = `/edit_cat/cat_${CID}`;
+        var url = "/api/categories/"+CID;
+        const res = await fetch(url, {
+          method  : 'DELETE',
+          headers: {
+          'Content-Type': 'application/json',
+          'Authentication-Token': this.authToken,
+          },
+        });
+
+        var data = await res.json();
+        if (res.ok) {
+            window.alert(data.message);
+            window.location.reload()
+        } else {
+           window.alert("Error!");
+        }
       },
     },
 }

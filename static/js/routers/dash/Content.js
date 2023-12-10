@@ -33,7 +33,7 @@ export default{
 
     <UserDashContent v-if="userRole=='buyer'" v-for="cat in categories" :key="cat.Name" :cat = "cat"/>
     
-    <button v-if="userRole=='store_manager'" id = "add-btn" type="button" class="btn btn-primary shadow-lg" @click = "">+ Add Category</button>
+    <button v-if="userRole=='store_manager'" id = "add-btn" type="button" class="btn btn-primary shadow-lg" @click = "add_cat">+ Add Category</button>
     <div v-if="userRole=='store_manager'" id = "initial-struct" style="display:'';">
         <ManagerDashContent v-for="cat in categories" :key="cat.Name" :cat = "cat"/>
         <div class="modal fade" id="confirmationModal-1" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">

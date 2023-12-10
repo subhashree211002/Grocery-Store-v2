@@ -6,5 +6,9 @@ from werkzeug.security import generate_password_hash
 
 with app.app_context():
     datastore.create_user(
-            email="inst2@email.com", password=generate_password_hash("inst2"), roles=["store_manager"], active=True)
+            email="inst3@email.com", password=generate_password_hash("inst3"), roles=["store_manager"], active=False)
+    datastore.create_user(
+            email="inst4@email.com", password=generate_password_hash("inst4"), roles=["store_manager"], active=False)
+    datastore.create_user(
+            email="inst5@email.com", password=generate_password_hash("inst5"), roles=["store_manager"], active=False)
     db.session.commit()
