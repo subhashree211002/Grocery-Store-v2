@@ -30,6 +30,7 @@ export default{
         return {
           userRole: localStorage.getItem('role'),
           email: localStorage.getItem('email'),
+          isWaiting: false,
         }
     },
     methods: {
@@ -49,8 +50,23 @@ export default{
         dash(){
             window.location.href = "/dash";
         },
-        export_csv(){
-            window.alert("done");
+        async export_csv(){
+            this.isWaiting = true
+            const res = await fetch('/download-csv')
+            const data = await res.json()
+            if (res.ok) {
+                const taskId = data['task-id']
+                const intv = setInterval(async () => {
+                const csv_res = await fetch(`/get-csv/${taskId}`)
+                if (csv_res.ok) {
+                    this.isWaiting = false
+                    clearInterval(intv)
+                    window.location.href = `/get-csv/${taskId}`
+                    window.alert("File exported");
+                }
+                }, 1000)
+            }
+            
         }
     },
 }
