@@ -36,8 +36,10 @@ export default {
                 'Authentication-Token': this.authToken,
                 },
             });
-
-        var data = await res.json();
-        this.managers = data;        
+        
+        if(res.ok){
+            var data = await res.json();
+            this.managers = data;        
+        }
     },
 }

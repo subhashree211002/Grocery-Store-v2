@@ -57,7 +57,7 @@ export default{
                     this.isWaiting = false
                     clearInterval(intv)
                     window.location.href = `/get-csv/${taskId}`
-                    window.alert("File exported");
+                    //window.alert("File exported");
                 }
                 }, 1000)
             }

@@ -30,7 +30,7 @@ export default {
     methods: {
       getUrl(folder, filename) {
         // Add any necessary logic here to construct the URL
-        return `${folder}/${filename}`;
+        return `${folder}/${filename}`; 
       },
       add_prod(CID){
         window.location.href = `/add_edit_prod/${CID}/0`;
@@ -79,7 +79,7 @@ export default {
             window.alert(data.message);
             window.location.reload()
         } else {
-           window.alert("Error!");
+           window.alert(data.message);
         }
       },
     },

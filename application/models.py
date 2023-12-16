@@ -20,6 +20,7 @@ class User(db.Model, UserMixin):
     roles = db.relationship('Role', secondary='roles_users',
                          backref=db.backref('users', lazy='dynamic'))
     orders = db.relationship('Orders_Desc', back_populates='user')  # Added relationship
+    requests = db.relationship('ApprovalRequest', back_populates='user')  # Added relationship
     
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer(), primary_key=True)
@@ -44,6 +45,10 @@ class ApprovalRequest(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('Category.CID'), nullable=False)
     update_name = db.Column(db.String(collation='NOCASE'), nullable=True)
     status = db.Column(db.String, default="Pending", nullable=False)
+    UID = db.Column(db.String, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    
+    # Establishing the relationship from Order_Desc to Users
+    user = db.relationship("User", back_populates="requests")
     
     cat = db.relationship("Category", back_populates="approval_requests")
 

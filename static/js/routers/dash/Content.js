@@ -36,6 +36,7 @@ export default{
     <button v-if="userRole=='store_manager'" id = "add-btn" type="button" class="btn btn-primary shadow-lg" @click = "add_cat">+ Add Category</button>
     <div v-if="userRole=='store_manager'" id = "initial-struct" style="display:'';">
         <ManagerDashContent v-for="cat in categories" :key="cat.Name" :cat = "cat"/>
+        <div v-if="categories.length == 0">No categories added</div>
         <div class="modal fade" id="confirmationModal-1" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -79,6 +80,7 @@ export default{
     <button v-if="userRole=='admin'" id = "add-btn" type="button" class="btn btn-primary shadow-lg" @click = "add_cat">+ Add Category</button>
     <div v-if="userRole=='admin'" id = "initial-struct" style="display:'';">
         <AdminDashContent v-for="cat in categories" :key="cat.Name" :cat = "cat"/>
+        <div v-if="categories.length == 0">No categories added</div>
         <div class="modal fade" id="confirmationModal-1" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -291,7 +293,8 @@ export default{
         if (res.ok) {
         this.categories = data
         } else {
-        alert(data.message)
+        //alert(data.message)
+        return
         }
     },
 

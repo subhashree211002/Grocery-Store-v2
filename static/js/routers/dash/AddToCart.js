@@ -30,7 +30,7 @@ export default {
               <p>Rs. {{ prod.Price }} </p>
             </div>
             <div class="col-auto col-sm-1" style="padding:0;">
-              <p> /{{ prod.Unit }} </p>
+              <p> {{ prod.Unit }} </p>
             </div>
           </div>
 
@@ -90,7 +90,7 @@ components: {
     // Define your computed properties here
     totalPrice() {
       // Replace this with your actual computed property logic
-      return this.prod.Price * parseInt(this.pqty);
+      return (this.prod.Price * parseInt(this.pqty)).toFixed(3);
     },
   },
   methods: {

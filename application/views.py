@@ -119,7 +119,7 @@ def get_csv(task_id):
     res = AsyncResult(task_id)
     if res.ready():
         filename = res.result
-        return send_file(filename, as_attachment=True)
+        return send_file(filename, as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', download_name='sales_summary.xlsx')
     else:
         return jsonify({"message": "Task Pending"}), 404
     

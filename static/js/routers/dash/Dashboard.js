@@ -71,14 +71,14 @@ export default {
           nca[j] = document.createElement("div");
           nca[j].classList.add("column");
       }
-      console.log(nca);
+      //console.log(nca);
       
       var i = 0
       var chl = Array.from(is.children);
       for (let ch of chl) {
           is.removeChild(ch);
           nca[i%this.columns].appendChild(ch);
-          console.log(ch);
+          //console.log(ch);
           i+=1;
       }   
   
@@ -89,7 +89,7 @@ export default {
       document.getElementById("content").appendChild(ns);
     },
     load_manager(){
-      console.log("hereee");
+      //console.log("hereee");
       var el1 = document.getElementById("content");
       el1.style.opacity = "0.0";
       

@@ -1,13 +1,19 @@
 export default {
     template: `<div class ="scrollable-comp">
         <div v-for= "req in requests" class ="req-line-item my-5 py-3" style = "display: flex; background-color:rgba(255, 255, 255, 0.5);">
-            <div class = "req-cat-name  mx-5"><b>{{req.cat.Name}}</b></div>
+            <div class = "req-cat-name  mx-3"><b>{{req.cat.Name}}</b></div>
 
-            <div v-if = "req.update_name" class = "req-type mx-5">Update name to <b>{{req.update_name}}</b> req</div>
-            <div v-if = "!req.update_name && req.cat.show" class = "req-type mx-5">Delete category req</div>
-            <div v-if = "!req.update_name && !req.cat.show" class = "req-type mx-5">Create category req</div>
+            <div v-if = "req.update_name" class = "req-type mx-3">Update name to <b>{{req.update_name}}</b> req</div>
+            <div v-if = "!req.update_name && req.cat.show" class = "req-type mx-3">Delete category req</div>
+            <div v-if = "!req.update_name && !req.cat.show" class = "req-type mx-3">Create category req</div>
 
-            <button type = "button" class = "btn-primary mx-5" @click="approve(req.id)"> Approve </button>
+            <div class = "req-cat-name  mx-3" style = "display: flex; flex-direction:column;">
+                <div><b>by {{req.user.username}}</b></div>
+                <div>mail: {{req.user.email}}</div>
+            </div>
+
+
+            <button type = "button" class = "btn-primary mx-3" @click="approve(req.id)"> Approve </button>
         </div>
     </div>`,
     data() {
@@ -18,7 +24,7 @@ export default {
     },
     methods: {
         async approve(id) {
-            console.log(id);
+            //console.log(id);
             var url = "/api/requests/"+id;
 
             const res = await fetch(url, {
@@ -46,8 +52,10 @@ export default {
                 'Authentication-Token': this.authToken,
                 },
             });
-
-        var data = await res.json();
-        this.requests = data;        
+        
+        if (res.ok){
+            var data = await res.json();
+            this.requests = data;   
+        }     
     },
 }

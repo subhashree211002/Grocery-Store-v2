@@ -46,10 +46,10 @@ export default {
 
         var data = await res.json();
         if (res.ok) {
-            window.alert(data.message);
-            window.location.reload()
+          window.alert(data.message);
+          window.location.reload()
         } else {
-           window.alert("Error!");
+          window.alert(data.message);
         }
       },
     },

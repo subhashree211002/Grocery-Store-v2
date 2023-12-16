@@ -62,10 +62,10 @@ export default {
 
             var data = await res.json();
             if (res.ok) {
-                window.alert("Category added!");
+                window.alert(data.message);
                 window.location.href = "/dash"
             } else {
-                window.alert("Error!");
+                window.alert(data.message);
             }
             return;
         },
@@ -86,16 +86,18 @@ export default {
 
             var data = await res.json();
             if (res.ok) {
-                window.alert("Category modified!");
+                //window.alert("Category modified!");
+                window.alert(data.message);
                 window.location.href = "/dash"
             } else {
-                window.alert("Error!");
+                window.alert(data.message);
+                //window.alert("Error!");
             }
             return;
         },
         async fetch_cat(){
             if(this.CID == 0) {
-                console.log(this.cat);
+                //console.log(this.cat);
                 return
             }
             //console.log(this.CID, this.pid);
@@ -111,7 +113,7 @@ export default {
 
             var data = await res.json();
             this.cat = {CID: data.CID, Name: data.Name};
-            console.log(this.cat);
+            //console.log(this.cat);
         },
     },
     mounted() {

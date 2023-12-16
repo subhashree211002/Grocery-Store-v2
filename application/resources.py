@@ -86,6 +86,7 @@ approval_req_fields = {
     'category_id': fields.Integer,
     'update_name': fields.String,
     'status': fields.String,
+    'user': fields.Nested(user_fields),
     'cat': Category_Field(attribute='cat'),
 }
 
@@ -200,40 +201,53 @@ class CategoryResource(Resource):
         args = category_parser.parse_args()
         category = Category(Name=args.get("Name"))
         
-        if(current_user.has_role('admin')):
-            category.show = 1
-            
-        db.session.add(category)
-        db.session.commit()
-        
-        if(current_user.has_role('store_manager')):
-            approval_request = ApprovalRequest(category_id=category.CID, update_name = None, status="Pending")
-            db.session.add(approval_request)
+        try:
+            if(current_user.has_role('admin')):
+                category.show = 1
+                
+            db.session.add(category)
             db.session.commit()
-        return {"message": "Category created successfully"}
+            
+            if(current_user.has_role('store_manager')):
+                #print(current_user.id)
+                approval_request = ApprovalRequest(category_id=category.CID, update_name = None, status="Pending", UID = current_user.id)
+                db.session.add(approval_request)
+                db.session.commit()
+                return {"message": "Category creation request has been sent\n The category will be added once approved!"}
+            return {"message": "Category created successfully"}
+        except:
+            db.session.rollback()
+            return {"message": "Category with the same name already exists please try a new name"}, 400
     
     # Update a category by ID (admin role required)
     @auth_required("token")
     def put(self, category_id):
         args = category_parser.parse_args()
         
-        if(current_user.has_role('admin')):
-            category = Category.query.get(category_id)
+        try:
+            if(current_user.has_role('admin')):
+                category = Category.query.get(category_id)
 
-            if not category:
-                return {"message": "Category not found"}, 404
+                if not category:
+                    return {"message": "Category not found"}, 404
 
-            # Update only the fields that are provided in the request
-            if args.get("Name"):
-                category.Name = args.get("Name")
+                # Update only the fields that are provided in the request
+                if args.get("Name"):
+                    category.Name = args.get("Name")
 
-            db.session.commit()
-            return {"message": "Category updated successfully"}
-        else:
-            approval_request = ApprovalRequest(category_id=category_id, update_name = args.get("Name"), status="Pending")
-            db.session.add(approval_request)
-            db.session.commit()
-            return {"message": "Category update request sent"}
+                db.session.commit()
+                return {"message": "Category updated successfully"}
+            else:
+                category = Category.query.filter_by(Name = args.get("Name")).first()
+                if category:
+                    return {"message":"This Name is being used by another category."},400
+                approval_request = ApprovalRequest(category_id=category_id, update_name = args.get("Name"), status="Pending", UID = current_user.id)
+                db.session.add(approval_request)
+                db.session.commit()
+                return {"message": "Category update request sent\n Name will be updated once approved!"}
+        except:
+            return {"message": "Category with same name already exists!"}, 400
+            
 
     # Delete a category by ID (admin role required)
     @auth_required("token")
@@ -247,10 +261,10 @@ class CategoryResource(Resource):
             db.session.commit()
             return {"message": "Category deleted successfully"}
         else:
-            approval_request = ApprovalRequest(category_id=category_id, update_name = None, status="Pending")
+            approval_request = ApprovalRequest(category_id=category_id, update_name = None, status="Pending", UID = current_user.id)
             db.session.add(approval_request)
             db.session.commit()
-            return {"message": "Category delete request sent"}
+            return {"message": "Category delete request sent\n Category will be deleted once approved!"}
 
 # Add the CategoryResource to the API with the endpoint '/categories'
 api.add_resource(CategoryResource, '/categories', '/categories/<int:category_id>')
@@ -293,7 +307,7 @@ class ApprovalRequestResource(Resource):
             db.session.commit()
             return {"message": "Category deletion approved"}
         else:
-            return {"message": "No categories found"}, 404
+            return {"message": "Category not found"}, 404
             
 api.add_resource(ApprovalRequestResource, '/requests', '/requests/<int:req_id>')
 
@@ -314,10 +328,13 @@ class ProductResource(Resource):
     @roles_required("store_manager")
     def post(self):
         args = product_parser.parse_args()
-        product = Product(Name=args.get("Name"), Price=args.get("Price"), Unit=args.get("Unit"),
-                          Stock=args.get("Stock"), CID=args.get("CID"))
-        db.session.add(product)
-        db.session.commit()
+        try:
+            product = Product(Name=args.get("Name"), Price=args.get("Price"), Unit=args.get("Unit"),
+                            Stock=args.get("Stock"), CID=args.get("CID"))
+            db.session.add(product)
+            db.session.commit()
+        except:
+            return {"message":"Error creating the product."}, 400
         return {"message": "Product created successfully"}
 
     @auth_required("token")
@@ -341,7 +358,7 @@ class ProductResource(Resource):
                 product.Stock = args.get("Stock")
             db.session.commit()
         except:
-            return {"error": "Product update error"}, 404
+            return {"error": "Product update error"}, 400
         return {"message": "Product updated successfully"}
     
     @auth_required("token")

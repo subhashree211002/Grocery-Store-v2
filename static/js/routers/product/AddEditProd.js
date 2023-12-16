@@ -111,7 +111,7 @@ export default {
             punit = document.getElementById("prod-unit").value;
             prate = document.getElementById("prod-rate").value;
             pqt = document.getElementById("prod-qt").value;     
-            console.log({ Name: pname, Unit: punit, Price: parseFloat(prate), Stock: parseInt(pqt), CID: parseInt(this.CID)});
+            //console.log({ Name: pname, Unit: punit, Price: parseFloat(prate), Stock: parseInt(pqt), CID: parseInt(this.CID)});
             var url = "/api/products";
 
             const res = await fetch(url, {
@@ -125,10 +125,10 @@ export default {
 
             var data = await res.json();
             if (res.ok) {
-                window.alert("Product added!");
+                window.alert(data.message);
                 window.location.href = "/dash"
             } else {
-                window.alert("Error!");
+                window.alert(data.message);
             }
             return;
         },
@@ -155,10 +155,10 @@ export default {
 
             var data = await res.json();
             if (res.ok) {
-                window.alert("Product modified!");
+                window.alert(data.message);
                 window.location.href = "/dash"
             } else {
-                window.alert("Error!");
+                window.alert(data.message);
             }
             return;
         },
@@ -182,7 +182,7 @@ export default {
                     this.prod = element;
                 }
             });
-            console.log(this.cat, this.prod);
+            //console.log(this.cat, this.prod);
         },
     },
     mounted() {
