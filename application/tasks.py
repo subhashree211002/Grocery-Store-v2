@@ -5,6 +5,7 @@ from .mail_service import send_message
 from .models import User, Role, Orders_Desc, Order_Details
 from jinja2 import Template
 import pandas as pd
+from datetime import datetime
 
 
 @shared_task(ignore_result=False)
@@ -119,10 +120,39 @@ def create_resource_csv():
 
 @shared_task(ignore_result=True)
 def daily_reminder(to, subject):
-    users = User.query.filter(User.roles.any(Role.name == 'admin')).all()
+    users = User.query.filter(User.roles.any(Role.name == 'buyer')).all()
     for user in users:
+        user_info = {
+            "CurrentDate": datetime.now().strftime("%Y-%m-%d"),           
+            'UserName': user.username,
+            'orders': [],
+            "TotalOrders": len(user.orders),
+            "TotalExpenditure": 0.0,
+        }
+
+        # Fetch order-related data for each user
+        for order in user.orders:
+            if order.Status == 1:
+                continue
+            order_info = {
+                'OrderDate': order.Date,
+                "TotalAmount": order.Expense,
+                'orderedProducts': []
+            }
+
+            # Fetch product-related data for each order
+            for order_detail in order.products:
+                product_info = {
+                    'product': order_detail.product.Name,
+                    'quantity': order_detail.Qty
+                }
+
+                order_info['orderedProducts'].append(product_info)
+
+            user_info['orders'].append(order_info)
+            user_info["TotalExpenditure"] += order_info["TotalAmount"]
         with open('test.html', 'r') as f:
             template = Template(f.read())
             send_message(user.email, subject,
-                        template.render(email=user.email))
+                        template.render(**user_info))
     return "OK"
