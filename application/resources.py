@@ -134,6 +134,7 @@ order_details_fields = {
 
 class UserByIdResource(Resource):
     @auth_required("token")
+    @cache.cached(timeout=30)
     def get(self, uid):
         user = User.query.filter_by(id=uid).first()
         if user:
@@ -148,6 +149,7 @@ class UserResource(Resource):
     # Retrieve all users
     @auth_required("token")
     @roles_required("admin")
+    @cache.cached(timeout=30)
     def get(self):
         users = User.query.filter_by(active = False).all()
         if len(users) > 0:
@@ -275,6 +277,7 @@ api.add_resource(CategoryResource, '/categories', '/categories/<int:category_id>
 class ApprovalRequestResource(Resource):
     @auth_required("token")
     @roles_required("admin")
+    @cache.cached(timeout=30)
     def get(self, req_id=None):    
         if req_id:
             req = ApprovalRequest.query.get(req_id)
@@ -317,7 +320,7 @@ api.add_resource(ApprovalRequestResource, '/requests', '/requests/<int:req_id>')
 class ProductResource(Resource):
     # Retrieve all products
     @auth_required("token")
-    
+    @cache.cached(timeout=30)
     def get(self):
         products = Product.query.all()
         if len(products) > 0:
@@ -381,6 +384,7 @@ api.add_resource(ProductResource, '/products', '/products/<int:product_id>')
 class ProductCatResource(Resource):
     # Retrieve all products
     @auth_required("token")
+    @cache.cached(timeout=30)
     def get(self, pid):
         product = Product.query.get(pid)
         if product:
@@ -393,6 +397,7 @@ api.add_resource(ProductCatResource, '/product/<int:pid>')
 class OrderDescResource(Resource):
     # Retrieve all order descriptions
     @auth_required("token")
+    @cache.cached(timeout=30)
     def get(self):
         orders_desc = Orders_Desc.query.all()
         if len(orders_desc) > 0:
@@ -449,6 +454,7 @@ api.add_resource(OrderDescResource, '/orders_desc')
 class OrderDetailsResource(Resource):
     # Retrieve all order details
     @auth_required("token")
+    @cache.cached(timeout=30)
     def get(self):
         order_details = Order_Details.query.all()
         if len(order_details) > 0:
@@ -560,6 +566,7 @@ api.add_resource(OrderDetailsResource, '/order_details')
 class CartDetails(Resource):
     # Retrieve all order details
     @auth_required("token")
+    @cache.cached(timeout=30)
     def get(self, email): 
         user = User.query.filter_by(email=email).first()
         
@@ -578,65 +585,3 @@ class CartDetails(Resource):
                 return {"message": "No order details found"}, 404
 
 api.add_resource(CartDetails, '/cartdetails/<string:email>')
-
-
-
-
-"""from flask_restful import Resource, Api, reqparse, fields, marshal
-from flask_security import auth_required, roles_required, current_user
-from flask import jsonify
-from sqlalchemy import or_
-from .models import db
-
-
-api = Api(prefix='/api')
-
-parser = reqparse.RequestParser()
-parser.add_argument('topic', type=str,
-                    help='Topic is required should be a string', required=True)
-parser.add_argument('description', type=str,
-                    help='Description is required and should be a string', required=True)
-parser.add_argument('resource_link', type=str,
-                    help='Resource Link is required and should be a string', required=True)
-
-
-class Creator(fields.Raw):
-    def format(self, user):
-        return user.email
-
-
-study_material_fields = {
-    'id': fields.Integer,
-    'topic':   fields.String,
-    'description':  fields.String,
-    'resource_link': fields.String,
-    'is_approved': fields.Boolean,
-    'creator': Creator
-}
-
-
-class StudyMaterial(Resource):
-    @auth_required("token")
-    def get(self):
-        if "inst" in current_user.roles:
-            study_resources = StudyResource.query.all()
-        else:
-            study_resources = StudyResource.query.filter(
-                or_(StudyResource.is_approved == True, StudyResource.creator == current_user)).all()
-        if len(study_resources) > 0:
-            return marshal(study_resources, study_material_fields)
-        else:
-            return {"message": "No Resourse Found"}, 404
-
-    @auth_required("token")
-    @roles_required("stud")
-    def post(self):
-        args = parser.parse_args()
-        study_resource = StudyResource(topic=args.get("topic"), description=args.get(
-            "description"), resource_link=args.get("resource_link"), creator_id=current_user.id)
-        db.session.add(study_resource)
-        db.session.commit()
-        return {"message": "Study Resource Created"}
-
-
-api.add_resource(StudyMaterial, '/study_material')"""

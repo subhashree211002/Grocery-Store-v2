@@ -119,7 +119,7 @@ def create_resource_csv():
 
 
 @shared_task(ignore_result=True)
-def daily_reminder(to, subject):
+def monthly_report(to, subject):
     users = User.query.filter(User.roles.any(Role.name == 'buyer')).all()
     for user in users:
         user_info = {
@@ -151,8 +151,26 @@ def daily_reminder(to, subject):
 
             user_info['orders'].append(order_info)
             user_info["TotalExpenditure"] += order_info["TotalAmount"]
-        with open('test.html', 'r') as f:
+        with open('report.html', 'r') as f:
             template = Template(f.read())
             send_message(user.email, subject,
                         template.render(**user_info))
+    return "OK"
+
+
+@shared_task(ignore_result=True)
+def daily_reminder(to, subject):
+    users = User.query.filter(User.roles.any(Role.name == 'buyer')).all()
+    for user in users:
+        today = datetime.now().strftime("%Y-%m-%d")
+        flag = 0
+        for ord in user.orders:
+            if (str(ord.Date) == today):
+                flag = 1
+        if flag == 1:
+            continue
+        with open('reminder.html', 'r') as f:
+            template = Template(f.read())
+            send_message(user.email, subject,
+                        template.render(username =  user.username))
     return "OK"
