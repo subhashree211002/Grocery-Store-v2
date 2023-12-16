@@ -23,7 +23,13 @@ export default {
                     },
                 });
 
-            window.alert(await res.json());
+            var x = await res.json();
+            if(res.ok){
+                window.location.reload()
+            }
+            else{
+                console.log(x.message);
+            }
         },
     },
     async mounted() {

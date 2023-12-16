@@ -5,6 +5,8 @@ from sqlalchemy import or_
 from datetime import datetime
 from .models import db, User, Role, Category, Product, Orders_Desc, Order_Details, ApprovalRequest
 from .instances import cache
+from .sec import datastore
+from werkzeug.security import generate_password_hash
 
 # Create Flask-RESTful API instance with a prefix
 api = Api(prefix='/api')
@@ -15,6 +17,12 @@ user_parser.add_argument('username', type=str, help='Username is required and sh
 user_parser.add_argument('email', type=str, help='Email is required and should be a string', required=True)
 user_parser.add_argument('password', type=str, help='Password is required and should be a string', required=True)
 user_parser.add_argument('active', type=bool, help='Active status should be a boolean')
+
+user_create_parser = reqparse.RequestParser()
+user_create_parser.add_argument('username', type=str, help='Username is required and should be a string', required=True)
+user_create_parser.add_argument('email', type=str, help='Email is required and should be a string', required=True)
+user_create_parser.add_argument('password', type=str, help='Password is required and should be a string', required=True)
+user_create_parser.add_argument('type', type=str, help='Type should be string')
 
 category_parser = reqparse.RequestParser()
 category_parser.add_argument('Name', type=str, help='Category name is required and should be a string', required=True)
@@ -141,9 +149,25 @@ class UserByIdResource(Resource):
             return marshal(user, user_by_id_fields)
         else:
             return {"message": "User not found"}, 404
+    
+    def post(self):
+        #name, email, userType, password
+        args = user_create_parser.parse_args()
+        #print(args.get("username"), args.get("email"), args.get("password"), args.get("type"), )
+        if not datastore.find_user(email=args.get("email")):
+            if args.get("type") == "store_manager":
+                datastore.create_user(username=args.get("username"), email=args.get("email"), password=generate_password_hash(args.get("password"),), roles=[args.get("type")], active=False)
+                db.session.commit()
+                return jsonify({"success": True, "message":"User created! You have to wait for admin approval!"})
+            else:
+                datastore.create_user(username=args.get("username"), email=args.get("email"), password=generate_password_hash(args.get("password"),), roles=[args.get("type")], active=True)
+                db.session.commit()
+                return jsonify({"success": True, "message":"User created! You can login now!"})
+                
+        return jsonify({"success": False, "message":"User already exists! Try with a different email id"})
 
 # Add the UserByIdResource to the API with the endpoint '/users/<uid>'
-api.add_resource(UserByIdResource, '/user/<int:uid>')
+api.add_resource(UserByIdResource, '/create_user', '/user/<int:uid>')
 
 class UserResource(Resource):
     # Retrieve all users
