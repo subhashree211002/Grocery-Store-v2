@@ -16,6 +16,7 @@ def create_resource_csv():
         Orders_Desc.Date,
         Category.Name,
         Product.Name,
+        Product.Stock,
         Order_Details.Qty
     )
     .filter(Orders_Desc.Status == 0)
@@ -27,11 +28,13 @@ def create_resource_csv():
     products = []
     cat_to_prod = {}
     prod_to_cat = {}
-    for date, category, product, quantity in sales_data:
+    prod_stock ={}
+    for date, category, product, stock, quantity in sales_data:
         sales_by_date.append({
             'Date': date,
             'Category': category,
             'Product': product,
+            'Stock': stock,
             'Quantity': quantity
         })
         
@@ -45,12 +48,15 @@ def create_resource_csv():
             products.append(product)
             
         prod_to_cat[product] = category
+        prod_stock[product] = stock
             
     #print(sales_data)
     #print(categories)
     #print(products)
     #print(cat_to_prod)
     #print(prod_to_cat)
+    #print(prod_stock)
+    
     
     # Query category-wise sales using the model class directly
     c_sales = {}
@@ -62,11 +68,11 @@ def create_resource_csv():
     for p in products:
         p_sales[p] = 0
         
-    for d, c, p, q in sales_data:
+    for d, c, p, s, q in sales_data:
         c_sales[c] += q
         p_sales[p] += q
 
-    print("\n\n------------")
+    #print("\n\n------------")
     #print(c_sales)
     #print(p_sales)
     
@@ -75,17 +81,19 @@ def create_resource_csv():
         category_sales['Category'].append(c)
         category_sales['TotalSales'].append(c_sales[c])
         
-    product_sales = {'Product':[], 'Category':[], 'TotalSales':[]}
+    product_sales = {'Product':[], 'Category':[], 'TotalSales':[], 'Stock Left': []}
     for p in p_sales:
+        #print(p, prod_to_cat[p], prod_stock[p])
         product_sales['Product'].append(p)
         product_sales['Category'].append(prod_to_cat[p])
         product_sales['TotalSales'].append(p_sales[p])
+        product_sales['Stock Left'].append(prod_stock[p])
     
     # Convert the data to pandas DataFrame for easier manipulation
     category_sales_df = pd.DataFrame(category_sales, columns=['Category', 'TotalSales'])
-    product_sales_df = pd.DataFrame(product_sales, columns=['Product', 'Category', 'TotalSales'])
+    product_sales_df = pd.DataFrame(product_sales, columns=['Product', 'Category', 'TotalSales', 'Stock Left'])
     
-    print(category_sales_df, product_sales_df)
+    #print(category_sales_df, product_sales_df)
     filename = 'sales_summary.xlsx'
 
     # Create an Excel writer
@@ -95,6 +103,7 @@ def create_resource_csv():
 
         # Write the second DataFrame to Sheet2
         category_sales_df.to_excel(writer, sheet_name='Sheet2', index=False)
+    
     #stud_res = StudyResource.query.with_entities(
     #    StudyResource.topic, StudyResource.description).all()
     """stud_res = Category.query.with_entities(Category.CID, Category.Name).all()

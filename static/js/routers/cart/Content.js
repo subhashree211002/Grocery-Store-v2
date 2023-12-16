@@ -26,7 +26,7 @@ export default {
                         <div class="col-3 text-wrap" :style="{ marginBottom: '0px' }"> &times; {{ prod.Price }} {{ prod.Unit }} </div>
                         
                         <div :class="['col-2', 'text-wrap', prod.PID]" :style="{ marginBottom: '0px' }">
-                            Rs <span class="line-total">{{ Qty * prod.Price }}</span>
+                            Rs <span class="line-total">{{ (Qty * prod.Price).toFixed(3) }}</span>
                         </div>
                         
                         <div :id="'buttons-' + prod.PID" class="col-2 text-wrap" :style="{ marginBottom: '0px', padding: '0px' }">
@@ -105,7 +105,7 @@ export default {
         // Use a computed property for totalCost
         // This will automatically update whenever the dependent values change
         totalCostComputed() {
-          return this.orders.reduce((total, { Qty, prod }) => total + Qty * prod.Price, 0);
+          return this.orders.reduce((total, { Qty, prod }) => total + Qty * prod.Price, 0).toFixed(3);
         },
       },
     
@@ -123,7 +123,7 @@ export default {
             this.totalCost = this.totalCostComputed;
         },
         toggle_edit(ind, qty) {
-            console.log(ind, qty);
+            //console.log(ind, qty);
             this.$set(this.editmode, ind, !this.editmode[ind]);
             
             if(this.buffered_qty[ind] == 0)
@@ -131,24 +131,24 @@ export default {
             else{
                 var new_ord = this.orders[ind]
                 new_ord.Qty = this.buffered_qty[ind];
-                console.log(new_ord)
+                //console.log(new_ord)
                 this.$set(this.orders, ind, new_ord);
                 this.$set(this.buffered_qty, ind, 0);
             }
         },
         update(pid, qty, index){
-            console.log(pid, qty, index);
-            console.log(this.orders[index])
+            // console.log(pid, qty, index);
+            // console.log(this.orders[index])
             var new_ord = this.orders[index]
             new_ord.Qty = qty;
-            console.log(new_ord)
+            //console.log(new_ord)
             this.$set(this.orders, index, new_ord);
         },
         async checkout() {
             var oid = this.orders[0].OID
-            console.log(oid, this.authToken, "here");
+            //console.log(oid, this.authToken, "here");
             var url = "/api/orders_desc";
-            console.log({"expense": this.totalCostComputed});
+            //console.log({"expense": this.totalCostComputed});
             fetch(url, {
                     method: 'POST',
                     headers: {
@@ -159,9 +159,9 @@ export default {
                 })
                 .then(response => {
                     response.json(); 
-                    console.log(response);
+                    //console.log(response);
                     if (!response.ok) {
-                        window.alert("failure");
+                        window.alert("Checkout failed!");
                     }
                     else{
                         window.alert("Checkout successful");
@@ -186,9 +186,9 @@ export default {
                 })
                 .then(response => {
                     response.json(); 
-                    console.log(response);
+                    //console.log(response);
                     if (!response.ok) {
-                        window.alert("failure");
+                        window.alert("Update failed");
                     }
                     else{update
                         window.alert("Update successful");
@@ -214,12 +214,12 @@ export default {
                 })
                 .then(response => {
                     response.json(); 
-                    console.log(response);
+                    //console.log(response);
                     if (!response.ok) {
-                        window.alert("failure");
+                        window.alert("Delete failed");
                     }
                     else{update
-                        window.alert("Update successful");
+                        window.alert("Delete successful");
                         window.location.reload();
                     }
                 })
@@ -253,9 +253,9 @@ export default {
                 this.editmode.push(false)
                 this.buffered_qty.push(0)
             }
-            console.log(this.buffered_qty)
+            //console.log(this.buffered_qty)
         } else {
-            alert(data.message)
+            console.log(data.message)
         }
     }
 }

@@ -112,17 +112,12 @@ components: {
             body: JSON.stringify({ email: this.user, PID: this.pid, Qty: this.pqty }),
         })
         const data = await res.json()
-        console.log(data)
-            // .then(response => response.json())
-            // .then((ret) => {
-            // // if (ret.stat !== "success") {
-            // //   window.alert(ret.stat);
-            // // }
-            // window.location.replace("/cart");
-            // })
-            // .catch((error) => {
-            // console.error('Error:', error);
-            // });
+        if (res.ok) {
+          window.location.replace("/cart");
+        }
+        else{
+          window.alert(data.message)
+        }
     },
 
     fadeIn(el) {
@@ -170,7 +165,7 @@ components: {
       this.prod = data;
       //console.log(this.prod);
     } else {
-      alert(data.message);
+      console.log(data.message);
     }
     this.load();
   },

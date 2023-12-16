@@ -491,7 +491,7 @@ class OrderDetailsResource(Resource):
                 
                 print("Rolling back")
                 db.session.rollback()
-                return {"message":"This item exists in your cart\n You can change your quantity by editing the cart"}
+                return {"message":"This item exists in your cart\n You can change your quantity by editing the cart"}, 400
             else:
                 print("success")
         return {"message": "Order details created successfully"}
