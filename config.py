@@ -14,5 +14,5 @@ class DevelopmentConfig(Config):
     WTF_CSRF_ENABLED = False
     SECURITY_TOKEN_AUTHENTICATION_HEADER = 'Authentication-Token'
     CACHE_REDIS_HOST = "localhost"
-    CACHE_REDIS_HOST = 6379
+    CACHE_REDIS_PORT = 6379
     CACHE_REDIS_DB = 3
