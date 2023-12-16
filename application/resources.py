@@ -4,6 +4,7 @@ from flask import jsonify
 from sqlalchemy import or_
 from datetime import datetime
 from .models import db, User, Role, Category, Product, Orders_Desc, Order_Details, ApprovalRequest
+from .instances import cache
 
 # Create Flask-RESTful API instance with a prefix
 api = Api(prefix='/api')
@@ -181,6 +182,7 @@ api.add_resource(UserResource, '/users', '/users/<int:uid>')
 class CategoryResource(Resource):
     # Retrieve all categories or a specific category by ID
     @auth_required("token")
+    @cache.cached(timeout=30)
     def get(self, category_id=None):    
         if category_id:
             category = Category.query.get(category_id)
