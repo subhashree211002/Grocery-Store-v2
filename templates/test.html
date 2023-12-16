@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Activity Report</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+
+        header {
+            background: #000000;
+            padding: 1em 0;
+            color: #ffffff;
+        }
+
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 1.5em;
+        }
+
+        main {
+            padding: 1em 0;
+        }
+
+        section {
+            width: 70%;
+            float: left;
+            margin-top: -100px;
+        }
+
+        article {
+            margin-top: 100px;
+            margin-bottom: 20px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .title {
+            background: #666666;
+            color: #ffffff;
+            padding: 0.5em;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .content {
+            padding: 1em;
+        }
+
+        table, td, th {
+            border: 1px solid black;
+        }
+
+        td {
+            text-align: center;
+        }
+
+        .end-details {
+            text-align: left;
+        }
+
+        footer {
+            padding: 1em 0;
+            color: #ffffff;
+            background: #666666;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="#">Monthly Activity Report</a></h1>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section>
+                <article>
+                    <div class="title">
+                        <h2>Monthly Progress Report</h2>
+                        <span>{{ CurrentDate }}</span>
+                    </div>
+                    <div class="content">
+                        <p>Dear {{ UserName }},</p>
+                        <p>Here is your monthly progress report summarizing your activity on our platform.</p>
+                        <p>Total Orders: {{ TotalOrders }}</p>
+                        <p>Total Expenditure: Rs. {{ TotalExpenditure }}</p>
+
+                        {% for order in orders %}
+                        <table style="border:1; width:100%; margin-top: 20px;">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.orderedProducts %}
+                                <tr>
+                                    <td>{{ item.product }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <th class="end-details">Total Amount</th>
+                                    <th class="end-details">Rs. {{ order.TotalAmount }}</th>
+                                </tr>
+                                <tr>
+                                    <th class="end-details">Order Date</th>
+                                    <th class="end-details">{{ order.OrderDate }}</th>
+                                </tr>
+                            </tbody>
+                        </table>
+                        {% endfor %}
+
+                    </div>
+                </article>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Your Company. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+
+</html>

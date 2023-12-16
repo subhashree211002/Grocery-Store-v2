@@ -13,19 +13,19 @@ with app.app_context():
     db.session.commit()
     
     if not datastore.find_user(email="admin@email.com"):
-        datastore.create_user(
+        datastore.create_user(username="admin1",
             email="admin@email.com", password=generate_password_hash("admin"), roles=["admin"])
-    if not datastore.find_user(email="inst1@email.com"):
-        datastore.create_user(
-            email="inst1@email.com", password=generate_password_hash("inst1"), roles=["store_manager"], active=False)
-    if not datastore.find_user(email="inst1@email.com"):
-        datastore.create_user(
-            email="inst2@email.com", password=generate_password_hash("inst2"), roles=["store_manager"], active=True)
-    if not datastore.find_user(email="stud1@email.com"):
-        datastore.create_user(
-            email="stud1@email.com", password=generate_password_hash("stud1"), roles=["buyer"])
-    if not datastore.find_user(email="stud2@email.com"):
-        datastore.create_user(
-            email="stud2@email.com", password=generate_password_hash("stud2"), roles=["buyer"])
+    if not datastore.find_user(email="manager1@email.com"):
+        datastore.create_user(username="manager1",
+            email="manager1@email.com", password=generate_password_hash("manager1"), roles=["store_manager"], active=False)
+    if not datastore.find_user(email="manager2@email.com"):
+        datastore.create_user(username="manager2",
+            email="manager2@email.com", password=generate_password_hash("manager2"), roles=["store_manager"], active=True)
+    if not datastore.find_user(email="cust1@email.com"):
+        datastore.create_user(username="customer1",
+            email="cust1@email.com", password=generate_password_hash("cust1"), roles=["buyer"])
+    if not datastore.find_user(email="cust2@email.com"):
+        datastore.create_user(username="customer2",
+            email="cust2@email.com", password=generate_password_hash("cust2"), roles=["buyer"])
 
     db.session.commit()

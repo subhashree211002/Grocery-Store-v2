@@ -5,7 +5,7 @@ from flask_restful import marshal, fields
 import flask_excel as excel
 from celery.result import AsyncResult
 from .tasks import create_resource_csv
-from .models import User, db
+from .models import User, db, RolesUsers, Role
 from .sec import datastore
 
 @app.get('/')
@@ -122,5 +122,52 @@ def get_csv(task_id):
         return send_file(filename, as_attachment=True)
     else:
         return jsonify({"message": "Task Pending"}), 404
+    
+@app.get('/mail-template')
+def mail_temp():
+    # Fetch all users from the User table
+    users = User.query.join(RolesUsers, User.id == RolesUsers.user_id)\
+                  .join(Role, RolesUsers.role_id == Role.id)\
+                  .filter(Role.name == "buyer")\
+                  .all()
+
+    user_data = []
+
+    # Iterate through each user and retrieve the required data
+    for user in users:
+        user_info = {
+            "CurrentDate": "2023-12-14",           
+            'UserName': user.username,
+            'orders': [],
+            "TotalOrders": len(user.orders),
+            "TotalExpenditure": 0.0,
+        }
+
+        # Fetch order-related data for each user
+        for order in user.orders:
+            if order.Status == 1:
+                continue
+            order_info = {
+                'OrderDate': order.Date,
+                "TotalAmount": order.Expense,
+                'orderedProducts': []
+            }
+
+            # Fetch product-related data for each order
+            for order_detail in order.products:
+                product_info = {
+                    'product': order_detail.product.Name,
+                    'quantity': order_detail.Qty
+                }
+
+                order_info['orderedProducts'].append(product_info)
+
+            user_info['orders'].append(order_info)
+            user_info["TotalExpenditure"] += order_info["TotalAmount"]
+
+        user_data.append(user_info)
+
+    #return jsonify(context, user_data)
+    return render_template("test.html", **user_data[0])
 
 

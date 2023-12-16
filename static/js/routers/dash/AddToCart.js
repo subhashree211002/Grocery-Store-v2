@@ -94,7 +94,7 @@ components: {
     },
   },
   methods: {
-    addToCart() {
+    async addToCart() {
         const url = "/api/order_details";
 
         if (!this.pqty || parseInt(this.pqty) <= 0) {
@@ -103,7 +103,7 @@ components: {
         }
 
         console.log({ email: this.user, PID: this.pid, Qty: this.pqty });
-        fetch(url, {
+        const res = await fetch(url, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
@@ -111,16 +111,18 @@ components: {
             },
             body: JSON.stringify({ email: this.user, PID: this.pid, Qty: this.pqty }),
         })
-            .then(response => response.json())
-            .then((ret) => {
-            // if (ret.stat !== "success") {
-            //   window.alert(ret.stat);
-            // }
-            window.location.replace("/cart");
-            })
-            .catch((error) => {
-            console.error('Error:', error);
-            });
+        const data = await res.json()
+        console.log(data)
+            // .then(response => response.json())
+            // .then((ret) => {
+            // // if (ret.stat !== "success") {
+            // //   window.alert(ret.stat);
+            // // }
+            // window.location.replace("/cart");
+            // })
+            // .catch((error) => {
+            // console.error('Error:', error);
+            // });
     },
 
     fadeIn(el) {

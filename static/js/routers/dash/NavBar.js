@@ -4,26 +4,24 @@ export default{
             {{ email }}'s Dashboard
         </div>
 
-        <div class="clickable nav shadow-sm" style = "margin-left:auto;text-align:right; border-right:2px solid black;">
-            <div @click="dash">Dashboard</div>
+        <div class="clickable nav shadow-sm" style = "margin-left:auto;text-align:right; border-right:2px solid black;" @click="dash">
+            <div>Dashboard</div>
         </div>
 
-        <div v-if="userRole=='store_manager'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
-            <div @click="export_csv">Export Product Details</div>
+        
+
+        <div v-if="userRole=='admin'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;" @click="approve">
+            <div>Approvals</div>
+        </div>
+        <div v-if="userRole=='store_manager'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;" @click="export_csv">
+            <div>Export Product Details</div>
+        </div>
+        <div v-if="userRole=='buyer'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;" @click="cart">
+            <div>Cart</div>
         </div>
 
-        <div v-if="userRole=='admin'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
-            <div @click="approve">Approvals</div>
-        </div>
-        <div v-if="userRole=='store_manager'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
-            <div @click=summary>Summary</div>
-        </div>
-        <div v-if="userRole=='buyer'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;">
-            <div @click=cart>Cart</div>
-        </div>
-
-        <div class="clickable nav shadow-sm" style = "margin-right:1vh; text-align:left;">
-            <div @click="logout">Logout</div>
+        <div class="clickable nav shadow-sm" style = "margin-right:1vh; text-align:left;" @click="logout">
+            <div>Logout</div>
         </div>
     </nav>`,
     data() {
@@ -43,9 +41,6 @@ export default{
         },
         approve(){
             window.location.href = "/approve";
-        },
-        summary(){
-            window.location.href = "/summary";
         },
         dash(){
             window.location.href = "/dash";

@@ -68,6 +68,7 @@ class Orders_Desc(db.Model):
     OID = db.Column(db.Integer, autoincrement=True, primary_key=True)
     Date = db.Column(db.Date)
     Status = db.Column(db.Integer, nullable=False, default=0)  # Change default value to 0
+    Expense = db.Column(db.Float, default=0)
     UID = db.Column(db.String, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     
     # Establishing the relationship from Order_Desc to Users

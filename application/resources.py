@@ -30,8 +30,11 @@ order_desc_parser.add_argument('Date', type=str, help='Date is required and shou
 order_desc_parser.add_argument('Status', type=int, help='Status is required and should be an integer', default=0)
 order_desc_parser.add_argument('UID', type=str, help='User ID is required and should be a string', required=True)
 
+
 order_desc_post_parser = reqparse.RequestParser()
 order_desc_post_parser.add_argument('OID', type=int, help='Order ID is required and should be an integer', required=True)
+order_desc_post_parser.add_argument('expense', type=float, help='expense is required and should be a float', default=0)
+
 
 order_details_parser = reqparse.RequestParser()
 order_details_parser.add_argument('email', type=str, help='User email is required and should be an string', required=True)
@@ -382,7 +385,7 @@ class OrderDescResource(Resource):
     @auth_required("token")
     def post(self):
         args = order_desc_post_parser.parse_args()
-        print(args.get("OID"))
+        print(args)
         datetime_obj = datetime.strptime(datetime.now().strftime("%Y-%m-%d"), "%Y-%m-%d").date()
         status = ""
         order = Orders_Desc.query.filter(Orders_Desc.OID == args.get("OID")).first()
@@ -392,6 +395,7 @@ class OrderDescResource(Resource):
         else:
             try:
                 order.Status = 0
+                order.Expense = args.get("expense")
                 order.Date = datetime_obj
                 db.session.flush()
                 

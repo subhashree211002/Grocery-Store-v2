@@ -146,16 +146,16 @@ export default {
         },
         async checkout() {
             var oid = this.orders[0].OID
-            //console.log(oid, this.authToken);
+            console.log(oid, this.authToken, "here");
             var url = "/api/orders_desc";
-
+            console.log({"expense": this.totalCostComputed});
             fetch(url, {
                     method: 'POST',
                     headers: {
                     'Content-Type': 'application/json',
                     'Authentication-Token': this.authToken,
                     },
-                    body: JSON.stringify({ "OID": oid }),
+                    body: JSON.stringify({ "OID": oid, "expense": this.totalCostComputed}),
                 })
                 .then(response => {
                     response.json(); 
