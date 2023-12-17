@@ -32,14 +32,14 @@ celery_app = celery_init_app(app)
 @celery_app.on_after_configure.connect
 def send_email(sender, **kwargs):
     sender.add_periodic_task(
-        crontab(hour=3, minute=43, day_of_month=1),
+        crontab(hour=13, minute=13, day_of_month=17),
         monthly_report.s('subhashree@email.com', 'Monthly Report'),
     )
     
 @celery_app.on_after_configure.connect
 def send_reminder(sender, **kwargs):
     sender.add_periodic_task(
-        crontab(hour=18, minute=30),
+        crontab(hour=13, minute=13),
         daily_reminder.s('subhashree@email.com', 'Daily Reminder'),
     )
 
