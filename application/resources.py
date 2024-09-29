@@ -142,7 +142,7 @@ order_details_fields = {
 
 class UserByIdResource(Resource):
     @auth_required("token")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self, uid):
         user = User.query.filter_by(id=uid).first()
         if user:
@@ -173,7 +173,7 @@ class UserResource(Resource):
     # Retrieve all users
     @auth_required("token")
     @roles_required("admin")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self):
         users = User.query.filter_by(active = False).all()
         if len(users) > 0:
@@ -208,7 +208,7 @@ api.add_resource(UserResource, '/users', '/users/<int:uid>')
 class CategoryResource(Resource):
     # Retrieve all categories or a specific category by ID
     @auth_required("token")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self, category_id=None):    
         if category_id:
             category = Category.query.get(category_id)
@@ -301,7 +301,7 @@ api.add_resource(CategoryResource, '/categories', '/categories/<int:category_id>
 class ApprovalRequestResource(Resource):
     @auth_required("token")
     @roles_required("admin")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self, req_id=None):    
         if req_id:
             req = ApprovalRequest.query.get(req_id)
@@ -344,7 +344,7 @@ api.add_resource(ApprovalRequestResource, '/requests', '/requests/<int:req_id>')
 class ProductResource(Resource):
     # Retrieve all products
     @auth_required("token")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self):
         products = Product.query.all()
         if len(products) > 0:
@@ -408,7 +408,7 @@ api.add_resource(ProductResource, '/products', '/products/<int:product_id>')
 class ProductCatResource(Resource):
     # Retrieve all products
     @auth_required("token")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self, pid):
         product = Product.query.get(pid)
         if product:
@@ -421,7 +421,7 @@ api.add_resource(ProductCatResource, '/product/<int:pid>')
 class OrderDescResource(Resource):
     # Retrieve all order descriptions
     @auth_required("token")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self):
         orders_desc = Orders_Desc.query.all()
         if len(orders_desc) > 0:
@@ -478,7 +478,7 @@ api.add_resource(OrderDescResource, '/orders_desc')
 class OrderDetailsResource(Resource):
     # Retrieve all order details
     @auth_required("token")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self):
         order_details = Order_Details.query.all()
         if len(order_details) > 0:
@@ -590,7 +590,7 @@ api.add_resource(OrderDetailsResource, '/order_details')
 class CartDetails(Resource):
     # Retrieve all order details
     @auth_required("token")
-    @cache.cached(timeout=30)
+    @cache.cached(timeout=1)
     def get(self, email): 
         user = User.query.filter_by(email=email).first()
         

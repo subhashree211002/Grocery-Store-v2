@@ -1,5 +1,5 @@
 export default{
-    template: `<nav id = "nav" class="navbar sticky-top bg-body-tertiary text-center">
+    template: `<nav id = "nav" class="navbar sticky-top bg-body-tertiary text-center" style = "background-color:red;">
         <div class="nav" style = "text-align:left;">
             {{ email }}'s Dashboard
         </div>
@@ -10,7 +10,7 @@ export default{
 
         
 
-        <div v-if="userRole=='admin'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;" @click="approve">
+        <div v-if="userRole=='admin'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black; background-color:red" @click="approve">
             <div>Approvals</div>
         </div>
         <div v-if="userRole=='store_manager'" class="clickable nav shadow-sm" style = "text-align:right; border-right:2px solid black;" @click="export_csv">
