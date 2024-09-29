@@ -37,7 +37,7 @@ Before starting, ensure the following are installed:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/yourusername/grocery-store-management.git
+   git clone https://github.com/subhashree211002/Grocery-Store-v2.git
    cd grocery-store-management
    ```
 
