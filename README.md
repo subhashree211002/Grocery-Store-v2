@@ -1,7 +1,3 @@
-Based on the project report and the commands you provided, here's a sample README file that includes instructions for running the Grocery Store Management System:
-
----
-
 # Grocery Store Management System
 
 ## Overview
@@ -100,10 +96,4 @@ Once the services are running:
 - Buyers can browse products, add items to the cart, and place orders.
 - The system sends daily reminders and periodic reports automatically.
 
-## License
-
-This project is licensed under the MIT License.
-
 ---
-
-This README includes setup instructions, the commands you provided, and an overview of the project based on the attached document. Let me know if you need any modifications!# Grocery-Store-v2
